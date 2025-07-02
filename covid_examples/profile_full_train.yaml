@@ -1,0 +1,68 @@
+# configs/02_full_training_gpu_optimized.yaml
+# Objetivo: Replicar o 'covid_full_training_2.py'
+# Treinamento completo no dataset de 73K, otimizado para GPUs com pouca memória.
+
+# --- Configurações do Experimento ---
+experiment:
+  run_name: "full_training_gpu_optimized"
+  description: "Treinamento completo com DNABERT-2 em 73K amostras, com otimizações de memória."
+  run_baseline_evaluation: true
+  run_training: true
+  run_final_evaluation: true
+  generate_final_reports: true
+
+# --- Configurações dos Dados ---
+data:
+  train_path: "GUE/virus/covid/train.csv"
+  dev_path: "GUE/virus/covid/dev.csv"
+  test_path: "GUE/virus/covid/test.csv"
+  
+  # Opcional: defina um tamanho de amostra para desenvolvimento rápido.
+  # Use 'null' para usar o dataset completo.
+  train_sample_size: null 
+  
+  # Usar subsets menores para avaliação durante o treino para economizar tempo/memória
+  dev_sample_size: 2000
+  test_sample_size: 1000
+  baseline_test_sample_size: 200
+
+# --- Configurações do Modelo ---
+model:
+  name_or_path: "zhihan1996/DNABERT-2-117M"
+  num_labels: 9
+  max_length: 200 # Reduzido para economizar memória
+
+# --- Configurações de Treinamento (Hugging Face TrainingArguments) ---
+training:
+  # Diretório de saída para checkpoints e resultados
+  output_dir: "./results/full_training_gpu_optimized"
+  # Estratégia de avaliação e salvamento
+  evaluation_strategy: "steps"
+  eval_steps: 2000
+  save_strategy: "steps"
+  save_steps: 2000
+  save_total_limit: 1 # Manter apenas o melhor checkpoint
+  load_best_model_at_end: false # Desabilitado para economizar memória
+  
+  # Parâmetros de treino
+  num_train_epochs: 2
+  learning_rate: 2e-5
+  weight_decay: 0.01
+  lr_scheduler_type: "linear"
+  warmup_steps: 100
+  max_grad_norm: 1.0
+
+  # Batch size e acumulação de gradiente
+  per_device_train_batch_size: 1 # Mínimo possível
+  per_device_eval_batch_size: 2  # Um pouco maior para avaliação
+  gradient_accumulation_steps: 16 # Batch size efetivo = 1 * 16 = 16
+
+  # Otimizações de memória
+  fp16: true # Mixed-precision training (essencial)
+  gradient_checkpointing: true # Troca computação por memória (essencial)
+
+  # Outros
+  logging_steps: 500
+  report_to: []
+  dataloader_num_workers: 2
+  dataloader_pin_memory: false 

@@ -1,0 +1,76 @@
+# configs/03_standard_finetune.yaml
+# Objetivo: Replicar o 'covid_fine_tuning_complete.py'
+# Um fluxo de fine-tuning mais padrão, usando uma amostra dos dados
+# e EarlyStopping para desenvolvimento e prototipação rápida.
+
+# --- Configurações do Experimento ---
+experiment:
+  run_name: "standard_finetune_sample"
+  description: "Fine-tuning padrão em uma amostra de 500 dados, com EarlyStopping."
+  run_baseline_evaluation: true
+  run_training: true
+  run_final_evaluation: true
+  generate_final_reports: true
+
+# --- Configurações dos Dados ---
+data:
+  train_path: "GUE/virus/covid/train.csv"
+  dev_path: "GUE/virus/covid/dev.csv"
+  test_path: "GUE/virus/covid/test.csv"
+  
+  # Usar uma amostra pequena para cada split para rodar rapidamente
+  train_sample_size: 500
+  dev_sample_size: 500
+  test_sample_size: 500
+  baseline_test_sample_size: 200
+
+# --- Configurações do Modelo ---
+model:
+  name_or_path: "zhihan1996/DNABERT-2-117M"
+  num_labels: 9
+  max_length: 512 # Comprimento de sequência maior, como no paper
+
+# --- Configurações de Treinamento (Hugging Face TrainingArguments) ---
+training:
+  output_dir: "./results/standard_finetune_sample"
+  
+  # Estratégia de avaliação e salvamento
+  evaluation_strategy: "steps"
+  eval_steps: 10 # Avaliar frequentemente em datasets pequenos
+  save_strategy: "steps"
+  save_steps: 10
+  save_total_limit: 2
+  load_best_model_at_end: true # Carregar o melhor modelo no final
+  metric_for_best_model: "accuracy"
+  greater_is_better: true
+
+  # Parâmetros de treino
+  num_train_epochs: 3 # Mais épocas, já que temos EarlyStopping
+  learning_rate: 2e-5
+  weight_decay: 0.01
+  lr_scheduler_type: "linear"
+  warmup_steps: 50
+
+  # Batch size
+  per_device_train_batch_size: 8
+  per_device_eval_batch_size: 16
+  gradient_accumulation_steps: 1
+
+  # Otimizações
+  fp16: true
+  gradient_checkpointing: false # Desnecessário para amostra pequena
+
+  # Outros
+  logging_steps: 10
+  report_to: []
+  dataloader_num_workers: 2
+  dataloader_pin_memory: true
+
+# --- Callbacks ---
+# Configurações para callbacks do Hugging Face
+callbacks:
+  early_stopping:
+    # Habilitar/desabilitar o callback de EarlyStopping
+    enabled: true
+    # Número de avaliações sem melhora antes de parar
+    patience: 3 
