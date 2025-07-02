@@ -1,0 +1,87 @@
+# Hiperparâmetros e configurações para os scripts de treinamento COVID
+# Uso: python run_training.py --profile <nome_do_perfil>
+
+# --- Configurações Gerais ---
+general:
+  model_name: "zhihan1996/DNABERT-2-117M"
+  num_labels: 9
+  base_output_dir: "../../checkpoints" # Salvar modelos fora da pasta de exemplos
+
+# --- Caminhos dos Dados (relativos à raiz do projeto) ---
+data_paths:
+  train: "GUE/virus/covid/train.csv"
+  dev: "GUE/virus/covid/dev.csv"
+  test: "GUE/virus/covid/test.csv"
+
+# --- Perfis de Treinamento ---
+profiles:
+  # Perfil para treinamento completo em GPU com VRAM limitada (ex: RTX 2080Ti)
+  low_vram_full_training:
+    description: "Full training on the entire dataset, optimized for low VRAM GPUs."
+    use_full_dataset: true
+    max_seq_length: 200
+    training_args:
+      num_train_epochs: 2
+      per_device_train_batch_size: 1
+      per_device_eval_batch_size: 1
+      gradient_accumulation_steps: 16
+      learning_rate: 2e-5
+      fp16: true
+      gradient_checkpointing: true
+      load_best_model_at_end: false
+      report_to: []
+
+  # Perfil para treinamento completo em GPU de alta performance (ex: A100 80GB)
+  a100_full_training:
+    description: "Full training on the entire dataset, optimized for A100 80GB."
+    use_full_dataset: true
+    max_seq_length: 512
+    training_args:
+      num_train_epochs: 5
+      per_device_train_batch_size: 8
+      per_device_eval_batch_size: 16
+      gradient_accumulation_steps: 4
+      learning_rate: 3e-5
+      fp16: true
+      gradient_checkpointing: false
+      load_best_model_at_end: true
+      report_to: "tensorboard"
+      dataloader_num_workers: 4
+
+  # Perfil para fine-tuning rápido (com amostragem) em GPU com VRAM limitada
+  low_vram_finetune:
+    description: "Quick fine-tuning on a sample of the data, for low VRAM GPUs."
+    use_full_dataset: false
+    sample_size: 500
+    max_seq_length: 512
+    training_args:
+      num_train_epochs: 1
+      per_device_train_batch_size: 1
+      per_device_eval_batch_size: 1
+      gradient_accumulation_steps: 2
+      learning_rate: 2e-5
+      fp16: true
+      gradient_checkpointing: false # Não é necessário com dataset pequeno
+      load_best_model_at_end: true
+      report_to: []
+      callbacks:
+        early_stopping_patience: 3
+
+  # Perfil para fine-tuning completo em GPU de alta performance (ex: A100 80GB)
+  a100_finetune:
+    description: "Full fine-tuning on the entire dataset, for A100 80GB."
+    use_full_dataset: true
+    max_seq_length: 512
+    training_args:
+      num_train_epochs: 5
+      per_device_train_batch_size: 8
+      per_device_eval_batch_size: 16
+      gradient_accumulation_steps: 4
+      learning_rate: 3e-5
+      fp16: true
+      gradient_checkpointing: false
+      load_best_model_at_end: true
+      report_to: "tensorboard"
+      dataloader_num_workers: 4
+      callbacks:
+        early_stopping_patience: 3 

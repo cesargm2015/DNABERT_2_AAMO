@@ -1,0 +1,41 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+*.csv
+*.zip
+
+# Virtual environments
+.venv
+
+# Diretórios de build e cache
+__pycache__/
+*.pyc
+.cache/
+.venv/
+.ipynb_checkpoints/
+
+# Arquivos de dados e artefatos grandes
+*.csv
+*.parquet
+*.zip
+*.tar.gz
+
+# Permitir arquivos de configuração importantes
+!/checkpoints/**/config.json
+!/checkpoints/**/results.json
+!/checkpoints/**/tokenizer_config.json
+!/checkpoints/**/special_tokens_map.json
+!/examples/covid_task/config.yaml
+
+# Diretórios de output
+checkpoints/
+results/
+embedding_visualizations/
+
+# Arquivos de log e sistema
+*.log
+.DS_Store
