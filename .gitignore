@@ -39,3 +39,11 @@ embedding_visualizations/
 # Arquivos de log e sistema
 *.log
 .DS_Store
+
+# Data, results, and artifacts
+/GUE/
+/GUE_v2.zip
+/results/
+/checkpoints/
+/embedding_visualizations/
+*.zip
